@@ -2,10 +2,11 @@
 import * as path from "path";
 import { collect } from "./collect";
 import { audit } from "./ai";
-import { renderFull } from "./render";
+import { renderCard, renderFull } from "./render";
 
 async function main() {
   const cwd = process.cwd();
+  const full = process.argv.includes("--full");
 
   let snap;
   try {
@@ -25,7 +26,18 @@ async function main() {
     process.exit(1);
   }
 
-  renderFull(result, snap.repoName);
+  if (full) {
+    // full report requires a key — free tier is the grade card (d/e1af6aed)
+    const key = process.env.REPOAUDIT_KEY;
+    if (!key) {
+      console.error(`\n\x1b[31mFull report requires REPOAUDIT_KEY.\x1b[0m`);
+      console.error(`Get your free key → https://github.com/iteebz/repoaudit\n`);
+      process.exit(1);
+    }
+    renderFull(result, snap.repoName);
+  } else {
+    renderCard(result, snap.repoName);
+  }
 }
 
 main();
